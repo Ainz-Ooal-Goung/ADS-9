@@ -5,13 +5,13 @@
 #include <vector>
 
 class PMTree {
- private:
-  std::vector<char> elements_;
-};
-
  public:
   PMTree(const std::vector<char>& elements);
   std::vector<char> getElements() const;
+
+ private:
+  std::vector<char> elements_;
+};
 
 std::vector<char> getPerm1(const PMTree& tree, int k);
 std::vector<char> getPerm2(const PMTree& tree, int k);
