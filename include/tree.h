@@ -5,11 +5,11 @@
 #include <vector>
 
 class PMTree {
-   public:
-    PMTree(const std::vector<char>& elements);
+  public:
+    explicit PMTree(const std::vector<char>& elements);
     std::vector<char> getElements() const;
 
-   private:
+  private:
     std::vector<char> elements_;
 };
 
