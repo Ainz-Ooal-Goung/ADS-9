@@ -1,56 +1,52 @@
 // Copyright 2022 NNTU-CS
-#include <vector>
 #include <algorithm>
-#include <cstdint>
 #include "tree.h"
-
-static int64_t factorial(int n) {
-  int64_t res = 1;
-  for (int i = 2; i <= n; ++i) {
-    res *= i;
+PMTree::PMTree(const std::vector<char>& elems) : elements(elems) {}
+std::vector<char> PMTree::getElements() const { return elements; }
+static void recursePerm(std::vector<char>& a, int l, std::vector<std::vector<char>>& res) {
+  int n = static_cast<int>(a.size());
+  if (l == n) {
+    res.push_back(a);
+    return;
   }
-  return res;
-}
-
-PMTree::PMTree(const std::vector<char>& elements)
-    : elements_(elements) {}
-
-static std::vector<char> computeKthPerm(std::vector<char>& elems, int64_t k) {
-  int n = static_cast<int>(elems.size());
-  std::vector<char> answer;
-  int64_t total = factorial(n);
-  int64_t idx = k - 1;
-  for (int i = n; i >= 1; --i) {
-    int64_t f = factorial(i - 1);
-    int64_t pos = idx / f;
-    idx %= f;
-    answer.push_back(elems[static_cast<std::size_t>(pos)]);
-    elems.erase(elems.begin() + static_cast<std::size_t>(pos));
+  for (int i = l; i < n; ++i) {
+    std::swap(a[l], a[i]);
+    recursePerm(a, l + 1, res);
+    std::swap(a[l], a[i]);
   }
-  return answer;
 }
-
-std::vector<char> getPerm1(const PMTree& tree, int k) {
+std::vector<std::vector<char>> getAllPerm(PMTree& tree) {
   std::vector<char> elems = tree.getElements();
-  std::sort(elems.begin(), elems.end());
-  return computeKthPerm(elems, k);
-}
-
-std::vector<char> getPerm2(const PMTree& tree, int k) {
-  std::vector<char> elems = tree.getElements();
-  std::sort(elems.rbegin(), elems.rend());
-  int n = static_cast<int>(elems.size());
-  int64_t total = factorial(n);
-  int64_t mirrorIndex = total - k + 1;
-  return computeKthPerm(elems, mirrorIndex);
-}
-
-std::vector<std::vector<char>> getAllPerms(const PMTree& tree) {
-  std::vector<char> elems = tree.getElements();
-  std::sort(elems.begin(), elems.end());
   std::vector<std::vector<char>> all;
-  do {
-    all.push_back(elems);
-  } while (std::next_permutation(elems.begin(), elems.end()));
+  recursePerm(elems, 0, all);
   return all;
+}
+std::vector<char> getPerm1(PMTree& tree, int index) {
+  if (index < 1) return {};
+  std::vector<std::vector<char>> all = getAllPerm(tree);
+  if (index > static_cast<int>(all.size())) return {};
+  return all[index - 1];
+}
+static long long factorial(int n) {
+  long long result = 1;
+  for (int i = 2; i <= n; ++i) result *= i;
+  return result;
+}
+std::vector<char> getPerm2(PMTree& tree, int index) {
+  std::vector<char> elems = tree.getElements();
+  int n = static_cast<int>(elems.size());
+  long long total = factorial(n);
+  if (index < 1 || index > total) return {};
+  std::sort(elems.begin(), elems.end());
+  int idx = index - 1;
+  std::vector<char> result;
+  std::vector<char> available = elems;
+  for (int i = n; i >= 1; --i) {
+    long long f = factorial(i - 1);
+    int pos = idx / f;
+    result.push_back(available[pos]);
+    available.erase(available.begin() + pos);
+    idx %= f;
+  }
+  return result;
 }
