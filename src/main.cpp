@@ -5,41 +5,40 @@
 #include "tree.h"
 
 int main() {
-  PMTree tree3(std::vector<char>{'1', '2', '3'});
-  for (int k = 1; k <= 6; ++k) {
-    auto perm = getPerm1(tree3, k);
-    std::cout << "Perm1, k=" << k << ": ";
-    for (char c : perm) {
-      std::cout << c;
-    }
-    std::cout << '\n';
-  }
-
-  std::cout << "\nРазмер n; Время getPerm1 (мкс); Время getPerm2 (мкс)\n";
+  std::cout << "n,total_ns1,total_ns2,total_ns_all\n";
+  const int REPEATS = 10000; 
   for (int n = 1; n <= 8; ++n) {
     std::vector<char> elems;
     for (int i = 0; i < n; ++i) {
       elems.push_back(static_cast<char>('A' + i));
     }
     PMTree treeN(elems);
-    int k = 1;
-    for (int i = 1; i <= n; ++i) {
-      k *= i;
-    }
-    k = k / 2;
-    
+
+    long long K = 1;
+    for (int i = 1; i <= n; ++i) K *= i;
+    K /= 2;
+
     auto t1_start = std::chrono::steady_clock::now();
-    auto p1 = getPerm1(treeN, k);
+    for (int r = 0; r < REPEATS; ++r) {
+      volatile auto p1 = getPerm1(treeN, static_cast<int>(K));
+    }
     auto t1_end = std::chrono::steady_clock::now();
-    
+
     auto t2_start = std::chrono::steady_clock::now();
-    auto p2 = getPerm2(treeN, k);
+    for (int r = 0; r < REPEATS; ++r) {
+      volatile auto p2 = getPerm2(treeN, static_cast<int>(K));
+    }
     auto t2_end = std::chrono::steady_clock::now();
-    
-    auto us1 = std::chrono::duration_cast<std::chrono::microseconds>(t1_end - t1_start).count();
-    auto us2 = std::chrono::duration_cast<std::chrono::microseconds>(t2_end - t2_start).count();
-    
-    std::cout << n << "; " << us1 << "; " << us2 << "\n";
+
+    auto tall_start = std::chrono::steady_clock::now();
+    volatile auto all = getAllPerms(treeN);
+    auto tall_end = std::chrono::steady_clock::now();
+
+    auto total_ns1 = std::chrono::duration_cast<std::chrono::nanoseconds>(t1_end - t1_start).count();
+    auto total_ns2 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_end - t2_start).count();
+    auto total_ns_all = std::chrono::duration_cast<std::chrono::nanoseconds>(tall_end - tall_start).count();
+
+    std::cout << n << "," << total_ns1 << "," << total_ns2 << "," << total_ns_all << "\n";
   }
 
   return 0;
