@@ -1,61 +1,34 @@
 // Copyright 2022 NNTU-CS
 #include <iostream>
-#include <vector>
+#include <fstream>
 #include <chrono>
-#include <cstdint>
+#include <vector>
 #include "tree.h"
-
-static int64_t factorial(int n) {
-  int64_t res = 1;
-  for (int i = 2; i <= n; ++i) {
-    res *= i;
-  }
-  return res;
-}
-
 int main() {
-  std::cout << "n,total_ns1,total_ns2,total_ns_all\n";
-  const int REPEATS = 10000;
+  std::ofstream out("data.csv");
+  out << "N,getPerm1,getPerm2,getAllPerm\n";
   for (int n = 1; n <= 8; ++n) {
     std::vector<char> elems;
     for (int i = 0; i < n; ++i) {
-      elems.push_back(static_cast<char>('A' + i));
+      elems.push_back('a' + i);
     }
-    PMTree treeN(elems);
-
-    auto t1_start = std::chrono::steady_clock::now();
-    for (int i = 1; i <= REPEATS; ++i) {
-      volatile auto p = getPerm1(treeN, i % factorial(n) + 1);
-      (void)p;
-    }
-    auto t1_end = std::chrono::steady_clock::now();
-
-    auto t2_start = std::chrono::steady_clock::now();
-    for (int i = 1; i <= REPEATS; ++i) {
-      volatile auto p = getPerm2(treeN, i % factorial(n) + 1);
-      (void)p;
-    }
-    auto t2_end = std::chrono::steady_clock::now();
-
-    auto tall_start = std::chrono::steady_clock::now();
-    volatile auto all = getAllPerms(treeN);
-    auto tall_end = std::chrono::steady_clock::now();
-
-    auto d1 = t1_end - t1_start;
-    auto total_ns1 =
-        std::chrono::duration_cast<std::chrono::nanoseconds>(d1).count();
-
-    auto d2 = t2_end - t2_start;
-    auto total_ns2 =
-        std::chrono::duration_cast<std::chrono::nanoseconds>(d2).count();
-
-    auto dall = tall_end - tall_start;
-    auto total_ns_all =
-        std::chrono::duration_cast<std::chrono::nanoseconds>(dall).count();
-
-    std::cout << n << "," << total_ns1 << "," << total_ns2 << ","
-              << total_ns_all << "\n";
+    PMTree tree(elems);
+    long long total = 1;
+    for (int i = 2; i <= n; ++i) total *= i;
+    int idx = static_cast<int>(total);
+    auto start1 = std::chrono::high_resolution_clock::now();
+    getPerm1(tree, idx);
+    auto end1 = std::chrono::high_resolution_clock::now();
+    auto dur1 = std::chrono::duration_cast<std::chrono::microseconds>(end1 - start1).count();
+    auto start2 = std::chrono::high_resolution_clock::now();
+    getPerm2(tree, idx);
+    auto end2 = std::chrono::high_resolution_clock::now();
+    auto dur2 = std::chrono::duration_cast<std::chrono::microseconds>(end2 - start2).count();
+    auto startAll = std::chrono::high_resolution_clock::now();
+    getAllPerm(tree);
+    auto endAll = std::chrono::high_resolution_clock::now();
+    auto durAll = std::chrono::duration_cast<std::chrono::microseconds>(endAll - startAll).count();
+    out << n << "," << dur1 << "," << dur2 << "," << durAll << "\n";
   }
-
   return 0;
 }
