@@ -5,7 +5,7 @@
 class PMTree {
   std::vector<char> elements;
  public:
-  PMTree(const std::vector<char>& elems);
+  explicit PMTree(const std::vector<char>& elems);
   std::vector<char> getElements() const;
 };
 std::vector<std::vector<char>> getAllPerm(PMTree& tree);
