@@ -2,11 +2,12 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <cstdint>
 #include "tree.h"
 
 int main() {
   std::cout << "n,total_ns1,total_ns2,total_ns_all\n";
-  const int REPEATS = 10000; 
+  const int REPEATS = 10000;
   for (int n = 1; n <= 8; ++n) {
     std::vector<char> elems;
     for (int i = 0; i < n; ++i) {
@@ -14,19 +15,17 @@ int main() {
     }
     PMTree treeN(elems);
 
-    long long K = 1;
-    for (int i = 1; i <= n; ++i) K *= i;
-    K /= 2;
-
     auto t1_start = std::chrono::steady_clock::now();
-    for (int r = 0; r < REPEATS; ++r) {
-      volatile auto p1 = getPerm1(treeN, static_cast<int>(K));
+    for (int i = 1; i <= REPEATS; ++i) {
+      volatile auto p = getPerm1(treeN, i % factorial(n) + 1);
+      (void)p;
     }
     auto t1_end = std::chrono::steady_clock::now();
 
     auto t2_start = std::chrono::steady_clock::now();
-    for (int r = 0; r < REPEATS; ++r) {
-      volatile auto p2 = getPerm2(treeN, static_cast<int>(K));
+    for (int i = 1; i <= REPEATS; ++i) {
+      volatile auto p = getPerm2(treeN, i % factorial(n) + 1);
+      (void)p;
     }
     auto t2_end = std::chrono::steady_clock::now();
 
@@ -34,11 +33,20 @@ int main() {
     volatile auto all = getAllPerms(treeN);
     auto tall_end = std::chrono::steady_clock::now();
 
-    auto total_ns1 = std::chrono::duration_cast<std::chrono::nanoseconds>(t1_end - t1_start).count();
-    auto total_ns2 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_end - t2_start).count();
-    auto total_ns_all = std::chrono::duration_cast<std::chrono::nanoseconds>(tall_end - tall_start).count();
+    auto d1 = t1_end - t1_start;
+    auto total_ns1 =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(d1).count();
 
-    std::cout << n << "," << total_ns1 << "," << total_ns2 << "," << total_ns_all << "\n";
+    auto d2 = t2_end - t2_start;
+    auto total_ns2 =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(d2).count();
+
+    auto dall = tall_end - tall_start;
+    auto total_ns_all =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(dall).count();
+
+    std::cout << n << "," << total_ns1 << "," << total_ns2 << ","
+              << total_ns_all << "\n";
   }
 
   return 0;
