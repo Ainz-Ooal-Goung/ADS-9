@@ -1,10 +1,7 @@
 // Copyright 2022 NNTU-CS
-#include  <iostream>
-#include  <fstream>
-#include  <locale>
-#include  <cstdlib>
-#include  <vector>
-#include  "tree.h"
+#include <vector>
+#include <algorithm>
+#include "tree.h"
 
 static long long factorial(int n) {
   long long res = 1;
@@ -49,4 +46,14 @@ std::vector<char> getPerm2(const PMTree& tree, int k) {
   std::vector<char> elems = tree.getElements();
   std::sort(elems.begin(), elems.end());
   return computeKthPerm(elems, k);
+}
+
+std::vector<std::vector<char>> getAllPerms(const PMTree& tree) {
+  std::vector<char> elems = tree.getElements();
+  std::sort(elems.begin(), elems.end());
+  std::vector<std::vector<char>> all;
+  do {
+    all.push_back(elems);
+  } while (std::next_permutation(elems.begin(), elems.end()));
+  return all;
 }
